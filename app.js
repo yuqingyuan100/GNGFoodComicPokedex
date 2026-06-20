@@ -8,6 +8,7 @@ const count = $("#count");
 const mapFilter = $("#mapFilter");
 const search = $("#search");
 const homeBack = $("#homeBack");
+let revealTimer = 0;
 
 function esc(s) {
   return String(s ?? "").replace(/[&<>"]/g, (c) => ({
@@ -54,6 +55,15 @@ function setHomeVisible(visible) {
   homeBack.classList.toggle("hidden", visible);
 }
 
+function triggerReveal() {
+  detail.classList.remove("revealing");
+  window.clearTimeout(revealTimer);
+  // Force a reflow so repeat opens and quick page switches replay the reveal.
+  void detail.offsetWidth;
+  detail.classList.add("revealing");
+  revealTimer = window.setTimeout(() => detail.classList.remove("revealing"), 520);
+}
+
 function openItem(id, push = true) {
   const item = DATA.find((x) => x.foodId === id);
   if (!item) return;
@@ -77,6 +87,7 @@ function openItem(id, push = true) {
   `).join("");
   $("#promptText").textContent = item.prompt || "未找到该候选图的生成提示词。";
   updateNav();
+  triggerReveal();
   if (push) {
     history.pushState(null, "", `#item-${encodeURIComponent(id)}`);
   }
