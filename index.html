@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GNG 食材漫画图鉴</title>
+<link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="bar">
+      <div class="brand">
+        <h1>GNG 食材漫画图鉴</h1>
+        <p>怪物来源、掉落叙事与食材图鉴合集</p>
+      </div>
+      <div class="tools">
+        <input id="search" class="search" placeholder="搜索食材 / ID / 怪物">
+        <select id="mapFilter" class="select"></select>
+        <div id="count" class="count"></div>
+      </div>
+    </div>
+  </header>
+  <main id="home" class="home"><section id="grid" class="grid"></section></main>
+  <section id="detail" class="detail">
+    <div class="comic-panel"><img id="comic" alt=""><div class="zoom-hint">点击查看原图</div></div>
+    <aside class="side">
+      <button id="back" class="back" type="button">返回图鉴</button>
+      <h2 id="title"></h2>
+      <div id="meta" class="meta"></div>
+      <div id="desc" class="desc"></div>
+      <div id="monsters" class="monster-list"></div>
+      <details class="prompt"><summary>查看生成提示词</summary><pre id="promptText"></pre></details>
+    </aside>
+  </section>
+</div>
+<div id="lightbox" class="lightbox"><button id="closeZoom" class="close" type="button">关闭</button><img id="zoomImg" alt=""></div>
+<div class="sig">Demo by 如愿</div>
+<script src="./data.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>
