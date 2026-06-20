@@ -10,6 +10,7 @@
 <div class="app">
   <header class="top">
     <div class="bar">
+      <button id="homeBack" class="home-back hidden" type="button">返回首页</button>
       <div class="brand">
         <h1>GNG 食材漫画图鉴</h1>
         <p>怪物来源、掉落叙事与食材图鉴合集</p>
@@ -23,7 +24,12 @@
   </header>
   <main id="home" class="home"><section id="grid" class="grid"></section></main>
   <section id="detail" class="detail">
-    <div class="comic-panel"><img id="comic" alt=""><div class="zoom-hint">点击查看原图</div></div>
+    <div class="comic-panel">
+      <button id="prevItem" class="page-nav prev" type="button" aria-label="上一张">上一张</button>
+      <img id="comic" alt="">
+      <button id="nextItem" class="page-nav next" type="button" aria-label="下一张">下一张</button>
+      <div class="zoom-hint">点击查看原图</div>
+    </div>
     <aside class="side">
       <button id="back" class="back" type="button">返回图鉴</button>
       <h2 id="title"></h2>
