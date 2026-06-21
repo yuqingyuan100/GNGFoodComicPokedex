@@ -9,6 +9,7 @@ const mapFilter = $("#mapFilter");
 const search = $("#search");
 const homeBack = $("#homeBack");
 let revealTimer = 0;
+let imageLoadToken = 0;
 
 function esc(s) {
   return String(s ?? "").replace(/[&<>"]/g, (c) => ({
@@ -55,6 +56,39 @@ function setHomeVisible(visible) {
   homeBack.classList.toggle("hidden", visible);
 }
 
+function resetComicPanel() {
+  imageLoadToken += 1;
+  window.clearTimeout(revealTimer);
+  detail.classList.remove("comic-loading", "comic-error", "revealing");
+  $("#comic").removeAttribute("src");
+}
+
+function loadComic(item) {
+  const token = ++imageLoadToken;
+  const comic = $("#comic");
+  window.clearTimeout(revealTimer);
+  detail.classList.remove("comic-error", "revealing");
+  detail.classList.add("comic-loading");
+  comic.removeAttribute("src");
+  comic.alt = item.name;
+
+  const preload = new Image();
+  preload.onload = () => {
+    if (token !== imageLoadToken || state.current !== item.foodId) return;
+    detail.classList.remove("comic-loading");
+    comic.src = item.comic;
+    comic.alt = item.name;
+    triggerReveal();
+  };
+  preload.onerror = () => {
+    if (token !== imageLoadToken || state.current !== item.foodId) return;
+    detail.classList.remove("comic-loading");
+    detail.classList.add("comic-error");
+    comic.removeAttribute("src");
+  };
+  preload.src = item.comic;
+}
+
 function triggerReveal() {
   detail.classList.remove("revealing");
   window.clearTimeout(revealTimer);
@@ -69,8 +103,7 @@ function openItem(id, push = true) {
   if (!item) return;
   state.current = id;
   setHomeVisible(false);
-  $("#comic").src = item.comic;
-  $("#comic").alt = item.name;
+  loadComic(item);
   $("#title").textContent = item.name;
   $("#meta").innerHTML = `
     <b>食材ID</b><span>${esc(item.foodId)}</span>
@@ -87,7 +120,6 @@ function openItem(id, push = true) {
   `).join("");
   $("#promptText").textContent = item.prompt || "未找到该候选图的生成提示词。";
   updateNav();
-  triggerReveal();
   if (push) {
     history.pushState(null, "", `#item-${encodeURIComponent(id)}`);
   }
@@ -96,6 +128,7 @@ function openItem(id, push = true) {
 
 function showHome(push = true) {
   state.current = null;
+  resetComicPanel();
   setHomeVisible(true);
   closeZoom();
   renderHome();
@@ -105,6 +138,7 @@ function showHome(push = true) {
 }
 
 function openZoom() {
+  if (detail.classList.contains("comic-loading") || detail.classList.contains("comic-error")) return;
   const item = DATA.find((x) => x.foodId === state.current);
   if (!item) return;
   $("#zoomImg").src = item.comic;
