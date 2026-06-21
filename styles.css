@@ -240,6 +240,10 @@ button { cursor: pointer; }
   cursor: zoom-in;
 }
 
+.detail.comic-unrevealed .comic-panel img {
+  cursor: pointer;
+}
+
 .detail.comic-loading .comic-panel img,
 .detail.comic-error .comic-panel img {
   opacity: 0;
@@ -324,6 +328,18 @@ button { cursor: pointer; }
   font-size: 12px;
   padding: 8px 10px;
   pointer-events: none;
+}
+
+.detail.comic-unrevealed .zoom-hint {
+  color: #fff1bd;
+  border-color: rgba(240, 207, 114, .78);
+  background: rgba(21, 17, 10, .82);
+  box-shadow: 0 0 22px rgba(212, 168, 67, .2);
+}
+
+.detail.comic-loading .zoom-hint,
+.detail.comic-error .zoom-hint {
+  display: none;
 }
 
 .side {

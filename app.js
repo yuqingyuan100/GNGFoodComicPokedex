@@ -8,8 +8,12 @@ const count = $("#count");
 const mapFilter = $("#mapFilter");
 const search = $("#search");
 const homeBack = $("#homeBack");
+const zoomHint = $(".zoom-hint");
 let revealTimer = 0;
+let autoRevealTimer = 0;
 let imageLoadToken = 0;
+let formalPreload = null;
+let formalReady = false;
 
 function esc(s) {
   return String(s ?? "").replace(/[&<>"]/g, (c) => ({
@@ -56,36 +60,99 @@ function setHomeVisible(visible) {
   homeBack.classList.toggle("hidden", visible);
 }
 
+function clearComicTimers() {
+  window.clearTimeout(revealTimer);
+  window.clearTimeout(autoRevealTimer);
+}
+
 function resetComicPanel() {
   imageLoadToken += 1;
-  window.clearTimeout(revealTimer);
-  detail.classList.remove("comic-loading", "comic-error", "revealing");
+  clearComicTimers();
+  state.revealed = false;
+  formalPreload = null;
+  formalReady = false;
+  detail.classList.remove("comic-loading", "comic-error", "revealing", "comic-unrevealed");
   $("#comic").removeAttribute("src");
+  zoomHint.textContent = "点击查看原图";
+}
+
+function setComicError(token) {
+  if (token !== imageLoadToken) return;
+  detail.classList.remove("comic-loading", "comic-unrevealed", "revealing");
+  detail.classList.add("comic-error");
+  $("#comic").removeAttribute("src");
+}
+
+function preloadFormalComic(item, token) {
+  formalReady = false;
+  formalPreload = new Image();
+  formalPreload.onload = () => {
+    if (token !== imageLoadToken || state.current !== item.foodId) return;
+    formalReady = true;
+  };
+  formalPreload.src = item.comic;
 }
 
 function loadComic(item) {
   const token = ++imageLoadToken;
   const comic = $("#comic");
-  window.clearTimeout(revealTimer);
-  detail.classList.remove("comic-error", "revealing");
+  clearComicTimers();
+  state.revealed = !item.unrevealedComic;
+  formalPreload = null;
+  formalReady = false;
+  detail.classList.remove("comic-error", "revealing", "comic-unrevealed");
   detail.classList.add("comic-loading");
   comic.removeAttribute("src");
   comic.alt = item.name;
+  zoomHint.textContent = item.unrevealedComic ? "点击揭晓" : "点击查看原图";
 
+  const initialSrc = item.unrevealedComic || item.comic;
   const preload = new Image();
   preload.onload = () => {
     if (token !== imageLoadToken || state.current !== item.foodId) return;
+    detail.classList.remove("comic-loading");
+    comic.src = initialSrc;
+    comic.alt = item.name;
+    if (item.unrevealedComic) {
+      detail.classList.add("comic-unrevealed");
+      preloadFormalComic(item, token);
+      autoRevealTimer = window.setTimeout(() => revealCurrent(token), 700);
+    } else {
+      state.revealed = true;
+      triggerReveal();
+    }
+  };
+  preload.onerror = () => setComicError(token);
+  preload.src = initialSrc;
+}
+
+function revealCurrent(expectedToken = imageLoadToken) {
+  const item = DATA.find((x) => x.foodId === state.current);
+  if (!item || state.revealed || expectedToken !== imageLoadToken) return;
+  state.revealed = true;
+  window.clearTimeout(autoRevealTimer);
+  detail.classList.remove("comic-unrevealed", "comic-error");
+  zoomHint.textContent = "点击查看原图";
+
+  const showFormal = () => {
+    if (expectedToken !== imageLoadToken || state.current !== item.foodId) return;
+    const comic = $("#comic");
     detail.classList.remove("comic-loading");
     comic.src = item.comic;
     comic.alt = item.name;
     triggerReveal();
   };
-  preload.onerror = () => {
-    if (token !== imageLoadToken || state.current !== item.foodId) return;
-    detail.classList.remove("comic-loading");
-    detail.classList.add("comic-error");
-    comic.removeAttribute("src");
-  };
+
+  if (formalReady || (formalPreload?.complete && formalPreload.naturalWidth > 0)) {
+    showFormal();
+    return;
+  }
+
+  detail.classList.add("comic-loading");
+  $("#comic").removeAttribute("src");
+  const preload = new Image();
+  preload.onload = showFormal;
+  preload.onerror = () => setComicError(expectedToken);
   preload.src = item.comic;
 }
 
@@ -141,6 +208,10 @@ function openZoom() {
   if (detail.classList.contains("comic-loading") || detail.classList.contains("comic-error")) return;
   const item = DATA.find((x) => x.foodId === state.current);
   if (!item) return;
+  if (!state.revealed) {
+    revealCurrent();
+    return;
+  }
   $("#zoomImg").src = item.comic;
   $("#zoomImg").alt = item.name;
   $("#lightbox").classList.add("active");
