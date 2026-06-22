@@ -116,7 +116,7 @@ function loadComic(item) {
     if (item.unrevealedComic) {
       detail.classList.add("comic-unrevealed");
       preloadFormalComic(item, token);
-      autoRevealTimer = window.setTimeout(() => revealCurrent(token), 700);
+      autoRevealTimer = window.setTimeout(() => revealCurrent(token), 1200);
     } else {
       state.revealed = true;
       triggerReveal();
@@ -186,6 +186,7 @@ function openItem(id, push = true) {
     </div>
   `).join("");
   $("#promptText").textContent = item.prompt || "未找到该候选图的生成提示词。";
+  $("#unrevealedPromptText").textContent = item.unrevealedPrompt || "未找到该未揭晓图的生成提示词。";
   updateNav();
   if (push) {
     history.pushState(null, "", `#item-${encodeURIComponent(id)}`);
