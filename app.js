@@ -116,7 +116,7 @@ function loadComic(item) {
     if (item.unrevealedComic) {
       detail.classList.add("comic-unrevealed");
       preloadFormalComic(item, token);
-      autoRevealTimer = window.setTimeout(() => revealCurrent(token), 1200);
+      autoRevealTimer = window.setTimeout(() => revealCurrent(token), 2000);
     } else {
       state.revealed = true;
       triggerReveal();
